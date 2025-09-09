@@ -1,2 +1,32 @@
 build
 !.vscode/*
+
+
+# CMake / Ninja build artifacts
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build.ninja
+rules.ninja
+compile_commands.json
+.ninja_log
+
+# generated binaries / firmware
+*.elf
+*.bin
+*.hex
+*.uf2
+*.dis
+
+# pico / sdk generated
+generated/
+pico-sdk/
+
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
