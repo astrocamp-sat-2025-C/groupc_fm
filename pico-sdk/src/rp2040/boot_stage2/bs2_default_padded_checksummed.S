@@ -1,4 +1,4 @@
-// Padded and checksummed version of: /Users/a81802/Documents/Programs/test1/pico-sdk/src/rp2040/boot_stage2/bs2_default.bin
+// Padded and checksummed version of: /Users/a81802/Documents/Programs/groupc_fm/pico-sdk/src/rp2040/boot_stage2/bs2_default.bin
 
 .cpu cortex-m0plus
 .thumb

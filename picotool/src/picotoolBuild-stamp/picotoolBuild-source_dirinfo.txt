@@ -4,6 +4,6 @@
 
 method=source_dir
 command=
-source_dir=/Users/a81802/Documents/Programs/test1/_deps/picotool-src
+source_dir=/Users/a81802/Documents/Programs/groupc_fm/_deps/picotool-src
 work_dir=
 

@@ -1,5 +1,5 @@
 
-/Users/a81802/Documents/Programs/test1/pico-sdk/src/rp2040/boot_stage2/bs2_default.elf:     file format elf32-littlearm
+/Users/a81802/Documents/Programs/groupc_fm/pico-sdk/src/rp2040/boot_stage2/bs2_default.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
@@ -8,7 +8,7 @@ Idx Name          Size      VMA       LMA       File off  Algn
   1 .ARM.attributes 00000022  00000000  00000000  00000ff0  2**0
                   CONTENTS, READONLY
 
-/Users/a81802/Documents/Programs/test1/pico-sdk/src/rp2040/boot_stage2/bs2_default.elf:     file format elf32-littlearm
+/Users/a81802/Documents/Programs/groupc_fm/pico-sdk/src/rp2040/boot_stage2/bs2_default.elf:     file format elf32-littlearm
 
 
 Disassembly of section .text:
