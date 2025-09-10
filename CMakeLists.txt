@@ -33,6 +33,7 @@ pico_sdk_init()
 add_executable(main
     main.cpp
     accel.cpp
+    MadgwickAHRS.c
     adc.cpp
     servo.cpp
 )

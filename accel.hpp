@@ -30,8 +30,8 @@
 // Function declarations
 bool probe_who_am_i(uint8_t *who);
 bool icm42688_init(void);
-bool read_accel_gyro_burst(int16_t *ax, int16_t *ay, int16_t *az, int16_t *gx,
-                           int16_t *gy, int16_t *gz);
+bool read_accel_gyro_burst(float *ax, float *ay, float *az, float *gx,
+                           float *gy, float *gz);
 void i2c_scan(void);
 
 // Scaled IMU data (accel in g, gyro in dps)

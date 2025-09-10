@@ -53,17 +53,23 @@ bool icm42688_init(void) {
   return true;
 }
 
-bool read_accel_gyro_burst(int16_t *ax, int16_t *ay, int16_t *az, int16_t *gx,
-                           int16_t *gy, int16_t *gz) {
+bool read_accel_gyro_burst(float *ax, float *ay, float *az, float *gx,
+                           float *gy, float *gz) {
   uint8_t buf[12];
   if (!i2c_read_regs(ACCEL_XOUT_H, buf, 12))
     return false;
-  *ax = (int16_t)((buf[0] << 8) | buf[1]);
-  *ay = (int16_t)((buf[2] << 8) | buf[3]);
-  *az = (int16_t)((buf[4] << 8) | buf[5]);
-  *gx = (int16_t)((buf[6] << 8) | buf[7]);
-  *gy = (int16_t)((buf[8] << 8) | buf[9]);
-  *gz = (int16_t)((buf[10] << 8) | buf[11]);
+  int16_t raw_ax = (int16_t)((buf[0] << 8) | buf[1]);
+  int16_t raw_ay = (int16_t)((buf[2] << 8) | buf[3]);
+  int16_t raw_az = (int16_t)((buf[4] << 8) | buf[5]);
+  int16_t raw_gx = (int16_t)((buf[6] << 8) | buf[7]);
+  int16_t raw_gy = (int16_t)((buf[8] << 8) | buf[9]);
+  int16_t raw_gz = (int16_t)((buf[10] << 8) | buf[11]);
+  if (ax) *ax = (float)raw_ax;
+  if (ay) *ay = (float)raw_ay;
+  if (az) *az = (float)raw_az;
+  if (gx) *gx = (float)raw_gx;
+  if (gy) *gy = (float)raw_gy;
+  if (gz) *gz = (float)raw_gz;
   return true;
 }
 
@@ -79,16 +85,16 @@ static constexpr float GYRO_SENSITIVITY =
 bool read_imu_scaled(ImuScaled *out) {
   if (!out)
     return false;
-  int16_t ax, ay, az, gx, gy, gz;
-  if (!read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz))
+  float raw_ax, raw_ay, raw_az, raw_gx, raw_gy, raw_gz;
+  if (!read_accel_gyro_burst(&raw_ax, &raw_ay, &raw_az, &raw_gx, &raw_gy, &raw_gz))
     return false;
 
-  out->ax_g = (float)ax / ACCEL_SENSITIVITY;
-  out->ay_g = (float)ay / ACCEL_SENSITIVITY;
-  out->az_g = (float)az / ACCEL_SENSITIVITY;
-  out->gx_dps = (float)gx / GYRO_SENSITIVITY;
-  out->gy_dps = (float)gy / GYRO_SENSITIVITY;
-  out->gz_dps = (float)gz / GYRO_SENSITIVITY;
+  out->ax_g = raw_ax / ACCEL_SENSITIVITY;
+  out->ay_g = raw_ay / ACCEL_SENSITIVITY;
+  out->az_g = raw_az / ACCEL_SENSITIVITY;
+  out->gx_dps = raw_gx / GYRO_SENSITIVITY;
+  out->gy_dps = raw_gy / GYRO_SENSITIVITY;
+  out->gz_dps = raw_gz / GYRO_SENSITIVITY;
   return true;
 }
 

@@ -225,3 +225,22 @@ float invSqrt(float x) {
 //====================================================================================================
 // END OF CODE
 //====================================================================================================
+
+void MadgwickGetEuler(float* yaw, float* pitch, float* roll) {
+    // yaw (Z), pitch (Y), roll (X)
+    if (yaw) {
+        *yaw = atan2f(2.0f * (q0 * q3 + q1 * q2),
+                      1.0f - 2.0f * (q2 * q2 + q3 * q3));
+    }
+    if (pitch) {
+        // asin の入力は -1..1 にクランプ
+        float t = 2.0f * (q0 * q2 - q3 * q1);
+        if (t > 1.0f) t = 1.0f;
+        if (t < -1.0f) t = -1.0f;
+        *pitch = asinf(t);
+    }
+    if (roll) {
+        *roll = atan2f(2.0f * (q0 * q1 + q2 * q3),
+                       1.0f - 2.0f * (q1 * q1 + q2 * q2));
+    }
+}

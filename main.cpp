@@ -6,6 +6,7 @@
 #include <pico/types.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "MadgwickAHRS.h"
 
 #define SERVO_PIN 11
 
@@ -65,93 +66,112 @@ int main() {
   static bool diff_stable = false;
 
   while (true) {
-    uint16_t photodiode_result;
-    uint16_t photoreflector_results[4];
+    // uint16_t photodiode_result;
+    // uint16_t photoreflector_results[4];
 
-    photodiode_read(&photodiode_result);
-    photoreflector_read(photoreflector_results);
-    bool current_pair = detect_sun_pair(photoreflector_results);
-    bool current_diff =
-        is_within_10pct(photoreflector_results[2], photoreflector_results[3]);
+    // photodiode_read(&photodiode_result);
+    // photoreflector_read(photoreflector_results);
+    // bool current_pair = detect_sun_pair(photoreflector_results);
+    // bool current_diff =
+    //     is_within_10pct(photoreflector_results[2], photoreflector_results[3]);
 
-    // 安定状態管理
-    if (!pair_stable) {
-      if (current_pair) {
-        if (pair_count < 10) {
-          pair_count++;
-        } else {
-          pair_stable = true;
-          pair_lost_count = 0;
-        }
-      } else {
-        servo_rotate_forward();
-        pair_count = 0;
-      }
-    } else {
-      if (current_pair) {
-        pair_lost_count = 0;
-      } else {
-        pair_lost_count++;
-        if (pair_lost_count >= 5) {
-          pair_stable = false;
-          pair_count = 0;
-          pair_lost_count = 0;
-        }
-      }
-    }
-
-    if (!diff_stable) {
-      if (pair_stable && current_diff) {
-        if (diff_count < 10) {
-          diff_count++;
-        } else {
-          diff_stable = true;
-          diff_lost_count = 0;
-        }
-      } else if (!pair_stable) {
-        // pairが不安定ならdiffもリセット
-        diff_count = 0;
-        diff_stable = false;
-      } else {
-        if (photoreflector_results[2] > photoreflector_results[3]) {
-          servo_rotate_forward_diff();
-        } else if (photoreflector_results[3] > photoreflector_results[2]) {
-          servo_rotate_reverse_diff();
-        }
-        diff_count = 0;
-      }
-    } else {
-      // diff安定状態の場合
-      if (current_diff && pair_stable) {
-        diff_lost_count = 0;
-      } else {
-        diff_lost_count++;
-        if (diff_lost_count >= 5) { // 5回連続で条件を満たさない場合
-          diff_stable = false;
-          diff_count = 0;
-          diff_lost_count = 0;
-        }
-      }
-    }
-
-    ImuScaled imu;
-    // if (read_imu_scaled(&imu)) {
-    //   printf("%d,%d,%d,%d,%ld,%ld,%d,%d,%d\n",
-    //          photoreflector_results[0], photoreflector_results[1],
-    //          photoreflector_results[2], photoreflector_results[3],
-    //          (long)sum23, (long)diff23, flag_23_within_10pct ? 1 : 0,
-    //          (g_state == ControlState::SeekPair23Max) ? 0 : 1,
-    //          (pair_flag && diff_flag) ? 1 : 0);
+    // // 安定状態管理
+    // if (!pair_stable) {
+    //   if (current_pair) {
+    //     if (pair_count < 10) {
+    //       pair_count++;
+    //     } else {
+    //       pair_stable = true;
+    //       pair_lost_count = 0;
+    //     }
+    //   } else {
+    //     servo_rotate_forward();
+    //     pair_count = 0;
+    //   }
     // } else {
-    //   // IMU失敗時も同じ列構成（IMU列は出力しない）
-    printf("%d,%d,%d,%d,%ld,%ld,%d,%d,%d\n", photoreflector_results[0],
-           photoreflector_results[1], photoreflector_results[2],
-           photoreflector_results[3],
-           (long)photoreflector_results[2] + photoreflector_results[3],
-           (long)photoreflector_results[2] - photoreflector_results[3],
-           diff_stable ? 1 : 0, pair_stable ? 1 : 0,
-           (pair_stable && diff_stable) ? 1 : 0);
+    //   if (current_pair) {
+    //     pair_lost_count = 0;
+    //   } else {
+    //     pair_lost_count++;
+    //     if (pair_lost_count >= 5) {
+    //       pair_stable = false;
+    //       pair_count = 0;
+    //       pair_lost_count = 0;
+    //     }
+    //   }
     // }
+
+    // if (!diff_stable) {
+    //   if (pair_stable && current_diff) {
+    //     if (diff_count < 10) {
+    //       diff_count++;
+    //     } else {
+    //       diff_stable = true;
+    //       diff_lost_count = 0;
+    //     }
+    //   } else if (!pair_stable) {
+    //     // pairが不安定ならdiffもリセット
+    //     diff_count = 0;
+    //     diff_stable = false;
+    //   } else {
+    //     if (photoreflector_results[2] > photoreflector_results[3]) {
+    //       servo_rotate_forward_diff();
+    //     } else if (photoreflector_results[3] > photoreflector_results[2]) {
+    //       servo_rotate_reverse_diff();
+    //     }
+    //     diff_count = 0;
+    //   }
+    // } else {
+    //   // diff安定状態の場合
+    //   if (current_diff && pair_stable) {
+    //     diff_lost_count = 0;
+    //   } else {
+    //     diff_lost_count++;
+    //     if (diff_lost_count >= 5) { // 5回連続で条件を満たさない場合
+    //       diff_stable = false;
+    //       diff_count = 0;
+    //       diff_lost_count = 0;
+    //     }
+    //   }
+    // }
+
+  // Read raw accel/gyro burst and append values to CSV output.
+  float ax = 0.0f, ay = 0.0f, az = 0.0f, gx = 0.0f, gy = 0.0f, gz = 0.0f;
+  bool imu_ok = read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz);
+
+  // Update Madgwick filter using scaled IMU values (convert gyro dps->rad/s if using read_imu_scaled)
+  ImuScaled imu;
+  if (read_imu_scaled(&imu)) {
+    const float DEG2RAD = 3.14159265f / 180.0f;
+    float mgx = imu.gx_dps * DEG2RAD;
+    float mgy = imu.gy_dps * DEG2RAD;
+    float mgz = imu.gz_dps * DEG2RAD;
+    MadgwickAHRSupdateIMU(mgx, mgy, mgz, imu.ax_g, imu.ay_g, imu.az_g);
+    float yaw, pitch, roll;
+    MadgwickGetEuler(&yaw, &pitch, &roll); // yaw/pitch/roll are in radians
+    // print Euler angles (radians)
+    
+    float roll_deg = roll * (180.0f / 3.14159265f);
+    float pitch_deg = pitch * (180.0f / 3.14159265f);
+    float yaw_deg = yaw * (180.0f / 3.14159265f);
+
+    printf("roll:%f,pitch:%f,yaw:%f\n", roll_deg, pitch_deg, yaw_deg);
+  }
+  // IMUの角速度はdeg/sなのでrad/sに変換してから渡す
+
+  // CSV: photoreflector[0..3], sum23, diff23, diff_stable, pair_stable,
+  // // pair_and_diff_ok, ax, ay, az, gx, gy, gz
+  // printf(
+  //   "%d,%d,%d,%d,%ld,%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+  //   photoreflector_results[0], photoreflector_results[1],
+  //   photoreflector_results[2], photoreflector_results[3],
+  //   (long)photoreflector_results[2] + photoreflector_results[3],
+  //   (long)photoreflector_results[2] - photoreflector_results[3],
+  //   diff_stable ? 1 : 0, pair_stable ? 1 : 0,
+  //   (pair_stable && diff_stable) ? 1 : 0,
+  // imu_ok ? (int)ax : 0, imu_ok ? (int)ay : 0, imu_ok ? (int)az : 0,
+  // imu_ok ? (int)gx : 0, imu_ok ? (int)gy : 0, imu_ok ? (int)gz : 0);
+  
   }
   return 0;
 }
