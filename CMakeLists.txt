@@ -1,31 +1,8 @@
-# Generated Cmake Pico project file
-
 cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# 全ビルドタイプで最適化無効化とデバッグ情報付加、Cortex-M0+ターゲット指定
-set(CMAKE_C_FLAGS "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_CXX_FLAGS "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_C_FLAGS_DEBUG "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_C_FLAGS_RELEASE "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_CXX_FLAGS_RELEASE "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_C_FLAGS_MINSIZEREL "-O0 -g -mcpu=cortex-m0plus -mthumb")
-set(CMAKE_CXX_FLAGS_MINSIZEREL "-O0 -g -mcpu=cortex-m0plus -mthumb")
-
-# アセンブラにもCortex-M0+ターゲットを適用
-set(CMAKE_ASM_FLAGS "-mcpu=cortex-m0plus -mthumb")
-set(CMAKE_ASM_FLAGS_DEBUG "-mcpu=cortex-m0plus -mthumb")
-set(CMAKE_ASM_FLAGS_RELEASE "-mcpu=cortex-m0plus -mthumb")
-set(CMAKE_ASM_FLAGS_RELWITHDEBINFO "-mcpu=cortex-m0plus -mthumb")
-set(CMAKE_ASM_FLAGS_MINSIZEREL "-mcpu=cortex-m0plus -mthumb")
-
-# Initialise pico_sdk from installed location
-# (note this can come from environment, CMake cache etc)
 
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
@@ -41,7 +18,8 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico CACHE STRING "Board type")
+
+set(PICO_BOARD pico_w CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -51,32 +29,32 @@ project(main C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Add executable. Default name is the project name, version 0.1
+# Executable and sources
+add_executable(main
+    main.cpp
+    accel.cpp
+    adc.cpp
+    servo.cpp
+)
 
-add_executable(main main.cpp adc.cpp accel.cpp servo.cpp)
+# Optional include directories (headers are in the project root)
+target_include_directories(main PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-pico_set_program_name(main "main")
-pico_set_program_version(main "0.1")
+# Link required SDK libraries
+target_link_libraries(main
+    pico_stdlib
+    hardware_i2c
+    hardware_spi
+    hardware_pwm
+)
 
-# Modify the below lines to enable/disable output over UART/USB
+# Enable stdio over UART (disable USB)
 pico_enable_stdio_uart(main 1)
 pico_enable_stdio_usb(main 0)
 
-# Add the standard library to the build
-target_link_libraries(main
-        pico_stdlib)
+if (PICO_CYW43_SUPPORTED)
+    target_link_libraries(main pico_cyw43_arch_none)
+endif()
 
-# Add the standard include files to the build
-target_include_directories(main PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-)
-
-# Add any user requested libraries
-target_link_libraries(main
-        hardware_spi
-    hardware_i2c
-    hardware_pwm
-        )
-
+# Create map/bin/hex/uf2 files
 pico_add_extra_outputs(main)
-
