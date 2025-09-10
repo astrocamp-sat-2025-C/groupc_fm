@@ -50,6 +50,49 @@ void set_servo_speed(uint pin, float speed) {
     uint pulse_us = (1500 + (int)(800 * speed)) * 1000.0 / 320.0;
     pwm_set_clkdiv(slice_num, 40.0f);         // 1カウント = 320ns
     pwm_set_chan_level(slice_num, PWM_CHAN_B, pulse_us); // 4688 × 320ns ≒ 1500μs など
+    printf("pluse_us:%d\n",pulse_us);
+}
+
+void gradinc_servo_speed(uint pin, float speed){ //0.0 to speed
+    const float span = 800.0f;
+    for(int i = 0; i < 100; i ++){
+        float step = 800.0f * speed / 100.0;
+        float usf = 1500.0f + step * i;
+        servo_set_pulse_us(pin, (uint16_t)usf);
+        i++;
+        sleep_ms(30);
+    }  
+}
+
+
+
+ void graddec_servo_speed(uint pin, float speed){
+     //speed to 0.0
+    const float span = 800.0f;
+    if (speed < 0.0f) speed = 0.0f;
+    if (speed > 1.0f) speed = 1.0f;
+    const int steps = 100;
+    // start from given speed and decrease to 0.0 over 'steps' iterations
+    for (int i = 0; i <= steps; ++i) {
+       float t = speed * (1.0f - (float)i / (float)steps); // current normalized speed
+      float usf = 1500.0f + span * t;
+       servo_set_pulse_us(pin, (uint16_t)usf);
+       sleep_ms(30);
+    }
+}
+
+void graddec_servo_speed_rev(uint pin, float speed){
+    // 逆回転（負方向）から 0.0 に戻す
+    const float span = 800.0f;
+    if (speed < 0.0f) speed = -speed;      // 負の入力を受けても扱えるように絶対値化
+    if (speed > 1.0f) speed = 1.0f;
+    const int steps = 100;
+    for (int i = 0; i <= steps; ++i) {
+        float t = speed * (1.0f - (float)i / (float)steps); // 正規化された現在の逆方向強さ
+        float usf = 1500.0f - span * t; // 逆回転は 1500 - span * t
+        servo_set_pulse_us(pin, (uint16_t)usf);
+        sleep_ms(30);
+    }
 }
 
 void servo_rotate_forward() {

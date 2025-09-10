@@ -15,11 +15,21 @@ void servo_set_speed(uint pin, float speed);
 
 void servo_set_pulse_us(uint pin, uint16_t us);
 
+
+// Set servo speed gradually to target value over a number of steps.
+void gradinc_servo_speed(uint pin, float speed);
+
+// Gradually decrease servo speed to target value over a number of steps.
+void graddec_servo_speed(uint pin, float speed);
+
+// Gradually decrease servo speed from negative (reverse) to 0.0 over a number of steps.
+void graddec_servo_speed_rev(uint pin, float speed);
+
 void servo_rotate_forward();
 
 void servo_rotate_reverse();
 
-void servo_rotate_forward_diff() ;
+void servo_rotate_forward_diff();
 
 void servo_rotate_reverse_diff();
 
