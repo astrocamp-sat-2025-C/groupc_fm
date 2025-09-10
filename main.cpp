@@ -42,7 +42,7 @@ static inline bool is_within_10pct(int32_t s2, int32_t s3) {
   return (sum23 == 0) ? (diff23 == 0) : (diff23 <= (sum23 * 10) / 100);
 }
 
-////////////////gyro zone////////////////
+////////////////いらない////////////////
 float *g_roll_deg = NULL;
 float *g_pitch_deg = NULL;
 float *g_yaw_deg = NULL;
@@ -148,36 +148,38 @@ int main() {
   float ax = 0.0f, ay = 0.0f, az = 0.0f, gx = 0.0f, gy = 0.0f, gz = 0.0f;
   bool imu_ok = read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz);
 
-  ////////////////////////////////////
+  ////////////////多分いらない///////////////
   static float roll_deg_val = 0.0f;
   static float pitch_deg_val = 0.0f;
   static float yaw_deg_val = 0.0f;
   g_roll_deg = &roll_deg_val;
   g_pitch_deg = &pitch_deg_val;
   g_yaw_deg = &yaw_deg_val;
-//////////////////////////////////////
-  // Update Madgwick filter using scaled IMU values (convert gyro dps->rad/s if using read_imu_scaled)
-  ImuScaled imu;
-  if (read_imu_scaled(&imu)) {
-    const float DEG2RAD = 3.14159265f / 180.0f;
-    float mgx = imu.gx_dps * DEG2RAD;
-    float mgy = imu.gy_dps * DEG2RAD;
-    float mgz = imu.gz_dps * DEG2RAD;
-    MadgwickAHRSupdateIMU(mgx, mgy, mgz, imu.ax_g, imu.ay_g, imu.az_g);
-    float yaw, pitch, roll;
-    MadgwickGetEuler(&yaw, &pitch, &roll); // yaw/pitch/roll are in radians
-    // print Euler angles (radians)
-    
-    *g_roll_deg = roll * (180.0f / 3.14159265f);
-    *g_pitch_deg = pitch * (180.0f / 3.14159265f);
-    *g_yaw_deg = yaw * (180.0f / 3.14159265f); //1/3の値が出ている
+////////////////////////////////////////////
 
-    printf("roll:%f, pitch:%f, yaw:%f\n", *g_roll_deg, *g_pitch_deg, *g_yaw_deg * 3.0f);
+  // Update Madgwick filter using scaled IMU values (convert gyro dps->rad/s if using read_imu_scaled)
+  // ImuScaled imu;
+  // if (read_imu_scaled(&imu)) {
+  //   const float DEG2RAD = 3.14159265f / 180.0f;
+  //   float mgx = imu.gx_dps * DEG2RAD;
+  //   float mgy = imu.gy_dps * DEG2RAD;
+  //   float mgz = imu.gz_dps * DEG2RAD;
+  //   MadgwickAHRSupdateIMU(mgx, mgy, mgz, imu.ax_g, imu.ay_g, imu.az_g);
+  //   float yaw, pitch, roll;
+  //   MadgwickGetEuler(&yaw, &pitch, &roll); // yaw/pitch/roll are in radians
+  //   // print Euler angles (radians)
+    
+  //   *g_roll_deg = roll * (180.0f / 3.14159265f);
+  //   *g_pitch_deg = pitch * (180.0f / 3.14159265f);
+  //   *g_yaw_deg = yaw * (180.0f / 3.14159265f); //1/3の値が出ている
+
+  //   printf("roll:%f, pitch:%f, yaw:%f\n", *g_roll_deg, *g_pitch_deg, *g_yaw_deg * 3.0f);
 
     //roll_deg, pitch_deg, yaw_deg ともにおかしな値が出るが、yawに実際の角度変化の1/3の値が出るようです。
     //3倍すれば太陽から惑星に対する回転角と比較してもよさげな値を出力できそうです。
-  }
+  // }
   // IMUの角速度はdeg/sなのでrad/sに変換してから渡す
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
   // CSV: photoreflector[0..3], sum23, diff23, diff_stable, pair_stable,
   // // pair_and_diff_ok, ax, ay, az, gx, gy, gz
@@ -193,7 +195,7 @@ int main() {
   // imu_ok ? (int)gx : 0, imu_ok ? (int)gy : 0, imu_ok ? (int)gz : 0);
 
   //目標角度まで衛星を回転させるプログラムtrack.cpp
-  // track(phase_angle); // 例: 現在の方位から90度回転させる
+  track(phase_angle); // 例: 現在の方位から90度回転させる
   
   }
   return 0;
