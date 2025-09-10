@@ -83,10 +83,14 @@ void i2c_scan(void)
         uint8_t buf[1] = {0};
         // send zero-length write to probe address; check return >= 0 (success/ack)
         int r = i2c_write_blocking(I2C_PORT, a, buf, 1, false);
-        if (r >= 0)
+        int r2 = i2c_read_blocking(I2C_PORT, a, buf, 1, false);
+        if (r > 0 && r2 > 0)
         {
             printf("found device at 0x%02X\n", a);
         }
+        // if(r > 0){
+        //     printf("found device at 0x%02X\n", a);
+        // }
     }
     printf("I2C scan done\n");
 }

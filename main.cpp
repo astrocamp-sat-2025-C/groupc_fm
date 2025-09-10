@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "diode.hpp"
+#include "adc.hpp"
 #include "accel.hpp" // commented out sensor usage below
 #include "servo.hpp"
 
@@ -21,11 +21,10 @@ int main()
     i2c_scan();
     photoreflector_init();
 
-    // icm42688_init() and 6-axis sensor initialization commented out
-    // if (!icm42688_init())
-    // {
-    //     printf("ICM-42688-P init failed\n");
-    // }
+    if (!icm42688_init())
+    {
+        printf("ICM-42688-P init failed\n");
+    }
 
     while (true)
     {
@@ -41,7 +40,6 @@ int main()
                photoreflector_results[2], photoreflector_results[3]);
 
         sleep_ms(1000);
-        /* 6-axis sensor readout commented out
         int16_t ax, ay, az, gx, gy, gz;
         if (read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz))
         {
@@ -64,44 +62,40 @@ int main()
             if (probe_who_am_i(&who))
                 printf("WHO_AM_I=0x%02X at I2C 0x%02X\n", who, I2C_ADDR);
         }
-        sleep_ms(100);
-        */
-    // --- Begin requested servo sequence ------------------------------------------------
-    // Initialize servo pin (safe to call repeatedly)
-    servo_init(SERVO_PIN);
+        // sleep_ms(100);
+        // servo_init(SERVO_PIN);
 
-    servo_set_speed(SERVO_PIN, 1.0);   // 正転
-    printf("FORWARD\n");
-    sleep_ms(400);
+        // servo_set_speed(SERVO_PIN, 1.0);   // 正転
+        // printf("FORWARD\n");
+        // sleep_ms(400);
 
-    servo_set_speed(SERVO_PIN, -1.0);  // 正転補正
-    printf("REVERSE\n");
-    sleep_ms(30);
-        
-    servo_set_speed(SERVO_PIN, 0.0);   // 停止
-    printf("STOP1\n");
-    sleep_ms(1500);
+        // servo_set_speed(SERVO_PIN, -1.0);  // 正転補正
+        // printf("REVERSE\n");
+        // sleep_ms(30);
+            
+        // servo_set_speed(SERVO_PIN, 0.0);   // 停止
+        // printf("STOP1\n");
+        // sleep_ms(1500);
 
-    servo_set_speed(SERVO_PIN, 1.0);   // 正転
-    printf("FORWARD\n");
-    sleep_ms(400);
+        // servo_set_speed(SERVO_PIN, 1.0);   // 正転
+        // printf("FORWARD\n");
+        // sleep_ms(400);
 
-    servo_set_speed(SERVO_PIN, 0.0);   // 停止
-    printf("STOP1\n");
-    sleep_ms(1000);
+        // servo_set_speed(SERVO_PIN, 0.0);   // 停止
+        // printf("STOP1\n");
+        // sleep_ms(1000);
 
-    servo_set_speed(SERVO_PIN, -1.0);  // 逆転
-    printf("REVERSE\n");
-    sleep_ms(400);
+        // servo_set_speed(SERVO_PIN, -1.0);  // 逆転
+        // printf("REVERSE\n");
+        // sleep_ms(400);
 
-    servo_set_speed(SERVO_PIN, 1.0);   // 逆転補正
-    printf("FORWARD\n");
-    sleep_ms(30);
+        // servo_set_speed(SERVO_PIN, 1.0);   // 逆転補正
+        // printf("FORWARD\n");
+        // sleep_ms(30);
 
-    servo_set_speed(SERVO_PIN, 0.0);   // 停止
-    printf("STOP2\n");
-    sleep_ms(1000);
-    // --- End requested servo sequence --------------------------------------------------
+        // servo_set_speed(SERVO_PIN, 0.0);   // 停止
+        // printf("STOP2\n");
+        // sleep_ms(1000);
     }
     return 0;
 }

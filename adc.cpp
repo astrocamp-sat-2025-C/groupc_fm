@@ -3,7 +3,7 @@
 #include <pico/types.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "diode.hpp"
+#include "adc.hpp"
 
 void photoreflector_init(void)
 {
