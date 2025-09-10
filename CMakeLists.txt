@@ -36,6 +36,7 @@ add_executable(main
     MadgwickAHRS.c
     adc.cpp
     servo.cpp
+    track.cpp
 )
 
 # Optional include directories (headers are in the project root)

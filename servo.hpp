@@ -33,5 +33,7 @@ void servo_rotate_forward_diff();
 
 void servo_rotate_reverse_diff();
 
+void servo_stop();
+
 #endif // SERVO_HPP
 

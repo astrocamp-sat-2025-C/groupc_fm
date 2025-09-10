@@ -7,8 +7,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "MadgwickAHRS.h"
+#include "track.hpp"
 
 #define SERVO_PIN 11
+
+float phase_angle = 90.0f; // 太陽から惑星に対する角度
 
 static inline bool detect_sun_pair(const uint16_t vals[4]) {
   // Candidates: (0,1), (1,2), (2,3), (3,1)
@@ -39,6 +42,12 @@ static inline bool is_within_10pct(int32_t s2, int32_t s3) {
   return (sum23 == 0) ? (diff23 == 0) : (diff23 <= (sum23 * 10) / 100);
 }
 
+////////////////gyro zone////////////////
+float *g_roll_deg = NULL;
+float *g_pitch_deg = NULL;
+float *g_yaw_deg = NULL;
+/////////////////////////////////////////
+
 int main() {
   stdio_init_all();
   gpio_set_function(12, UART_FUNCSEL_NUM(uart0, 0));
@@ -66,79 +75,87 @@ int main() {
   static bool diff_stable = false;
 
   while (true) {
-    // uint16_t photodiode_result;
-    // uint16_t photoreflector_results[4];
+    uint16_t photodiode_result;
+    uint16_t photoreflector_results[4];
 
-    // photodiode_read(&photodiode_result);
-    // photoreflector_read(photoreflector_results);
-    // bool current_pair = detect_sun_pair(photoreflector_results);
-    // bool current_diff =
-    //     is_within_10pct(photoreflector_results[2], photoreflector_results[3]);
+    photodiode_read(&photodiode_result);
+    photoreflector_read(photoreflector_results);
+    bool current_pair = detect_sun_pair(photoreflector_results);
+    bool current_diff =
+        is_within_10pct(photoreflector_results[2], photoreflector_results[3]);
 
-    // // 安定状態管理
-    // if (!pair_stable) {
-    //   if (current_pair) {
-    //     if (pair_count < 10) {
-    //       pair_count++;
-    //     } else {
-    //       pair_stable = true;
-    //       pair_lost_count = 0;
-    //     }
-    //   } else {
-    //     servo_rotate_forward();
-    //     pair_count = 0;
-    //   }
-    // } else {
-    //   if (current_pair) {
-    //     pair_lost_count = 0;
-    //   } else {
-    //     pair_lost_count++;
-    //     if (pair_lost_count >= 5) {
-    //       pair_stable = false;
-    //       pair_count = 0;
-    //       pair_lost_count = 0;
-    //     }
-    //   }
-    // }
+    // 安定状態管理
+    if (!pair_stable) {
+      if (current_pair) {
+        if (pair_count < 10) {
+          pair_count++;
+        } else {
+          pair_stable = true;
+          pair_lost_count = 0;
+        }
+      } else {
+        // servo_rotate_forward();
+        pair_count = 0;
+      }
+    } else {
+      if (current_pair) {
+        pair_lost_count = 0;
+      } else {
+        pair_lost_count++;
+        if (pair_lost_count >= 5) {
+          pair_stable = false;
+          pair_count = 0;
+          pair_lost_count = 0;
+        }
+      }
+    }
 
-    // if (!diff_stable) {
-    //   if (pair_stable && current_diff) {
-    //     if (diff_count < 10) {
-    //       diff_count++;
-    //     } else {
-    //       diff_stable = true;
-    //       diff_lost_count = 0;
-    //     }
-    //   } else if (!pair_stable) {
-    //     // pairが不安定ならdiffもリセット
-    //     diff_count = 0;
-    //     diff_stable = false;
-    //   } else {
-    //     if (photoreflector_results[2] > photoreflector_results[3]) {
-    //       servo_rotate_forward_diff();
-    //     } else if (photoreflector_results[3] > photoreflector_results[2]) {
-    //       servo_rotate_reverse_diff();
-    //     }
-    //     diff_count = 0;
-    //   }
-    // } else {
-    //   // diff安定状態の場合
-    //   if (current_diff && pair_stable) {
-    //     diff_lost_count = 0;
-    //   } else {
-    //     diff_lost_count++;
-    //     if (diff_lost_count >= 5) { // 5回連続で条件を満たさない場合
-    //       diff_stable = false;
-    //       diff_count = 0;
-    //       diff_lost_count = 0;
-    //     }
-    //   }
-    // }
+    if (!diff_stable) {
+      if (pair_stable && current_diff) {
+        if (diff_count < 10) {
+          diff_count++;
+        } else {
+          diff_stable = true;
+          diff_lost_count = 0;
+        }
+      } else if (!pair_stable) {
+        // pairが不安定ならdiffもリセット
+        diff_count = 0;
+        diff_stable = false;
+      } else {
+        if (photoreflector_results[2] > photoreflector_results[3]) {
+          // servo_rotate_forward_diff();
+        } else if (photoreflector_results[3] > photoreflector_results[2]) {
+          // servo_rotate_reverse_diff();
+        }
+        diff_count = 0;
+      }
+    } else {
+      // diff安定状態の場合
+      if (current_diff && pair_stable) {
+        diff_lost_count = 0;
+      } else {
+        diff_lost_count++;
+        if (diff_lost_count >= 5) { // 5回連続で条件を満たさない場合
+          diff_stable = false;
+          diff_count = 0;
+          diff_lost_count = 0;
+        }
+      }
+    }
 
   // Read raw accel/gyro burst and append values to CSV output.
   float ax = 0.0f, ay = 0.0f, az = 0.0f, gx = 0.0f, gy = 0.0f, gz = 0.0f;
   bool imu_ok = read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz);
 
+  ////////////////////////////////////
+  static float roll_deg_val = 0.0f;
+  static float pitch_deg_val = 0.0f;
+  static float yaw_deg_val = 0.0f;
+  g_roll_deg = &roll_deg_val;
+  g_pitch_deg = &pitch_deg_val;
+  g_yaw_deg = &yaw_deg_val;
+//////////////////////////////////////
   // Update Madgwick filter using scaled IMU values (convert gyro dps->rad/s if using read_imu_scaled)
   ImuScaled imu;
   if (read_imu_scaled(&imu)) {
@@ -151,11 +168,14 @@ int main() {
     MadgwickGetEuler(&yaw, &pitch, &roll); // yaw/pitch/roll are in radians
     // print Euler angles (radians)
     
-    float roll_deg = roll * (180.0f / 3.14159265f);
-    float pitch_deg = pitch * (180.0f / 3.14159265f);
-    float yaw_deg = yaw * (180.0f / 3.14159265f);
+    *g_roll_deg = roll * (180.0f / 3.14159265f);
+    *g_pitch_deg = pitch * (180.0f / 3.14159265f);
+    *g_yaw_deg = yaw * (180.0f / 3.14159265f); //1/3の値が出ている
 
-    printf("roll:%f,pitch:%f,yaw:%f\n", roll_deg, pitch_deg, yaw_deg);
+    printf("roll:%f, pitch:%f, yaw:%f\n", *g_roll_deg, *g_pitch_deg, *g_yaw_deg * 3.0f);
+
+    //roll_deg, pitch_deg, yaw_deg ともにおかしな値が出るが、yawに実際の角度変化の1/3の値が出るようです。
+    //3倍すれば太陽から惑星に対する回転角と比較してもよさげな値を出力できそうです。
   }
   // IMUの角速度はdeg/sなのでrad/sに変換してから渡す
 
@@ -171,6 +191,9 @@ int main() {
   //   (pair_stable && diff_stable) ? 1 : 0,
   // imu_ok ? (int)ax : 0, imu_ok ? (int)ay : 0, imu_ok ? (int)az : 0,
   // imu_ok ? (int)gx : 0, imu_ok ? (int)gy : 0, imu_ok ? (int)gz : 0);
+
+  //目標角度まで衛星を回転させるプログラムtrack.cpp
+  // track(phase_angle); // 例: 現在の方位から90度回転させる
   
   }
   return 0;

@@ -122,3 +122,8 @@ void servo_rotate_reverse_diff() {
   set_servo_speed(11, 0.0f); // 停止
   sleep_ms(1000);
 }
+
+void servo_stop() {
+    set_servo_speed(11, 0.0f); // 停止
+    sleep_ms(1000);
+}
