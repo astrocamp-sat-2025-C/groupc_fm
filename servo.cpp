@@ -94,3 +94,31 @@ void graddec_servo_speed_rev(uint pin, float speed){
         sleep_ms(30);
     }
 }
+
+void servo_rotate_forward() {
+    set_servo_speed(11, 1.0f); // 前進
+    sleep_ms(500);
+    set_servo_speed(11, 0.0f); // 停止
+    sleep_ms(1000);
+}
+
+void servo_rotate_reverse() {
+    set_servo_speed(11, -1.0f); // 後退
+    sleep_ms(500);
+    set_servo_speed(11, 0.0f); // 停止
+    sleep_ms(1000);
+}
+
+void servo_rotate_forward_diff() {
+  set_servo_speed(11, 0.3f); // 前進
+  sleep_ms(500);
+  set_servo_speed(11, 0.0f); // 停止
+  sleep_ms(1000);
+}
+
+void servo_rotate_reverse_diff() {
+  set_servo_speed(11, -0.3f); // 後退
+  sleep_ms(500);
+  set_servo_speed(11, 0.0f); // 停止
+  sleep_ms(1000);
+}
