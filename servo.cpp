@@ -51,3 +51,31 @@ void set_servo_speed(uint pin, float speed) {
     pwm_set_clkdiv(slice_num, 40.0f);         // 1カウント = 320ns
     pwm_set_chan_level(slice_num, PWM_CHAN_B, pulse_us); // 4688 × 320ns ≒ 1500μs など
 }
+
+void servo_rotate_forward() {
+    set_servo_speed(11, 1.0f); // 前進
+    sleep_ms(500);
+    set_servo_speed(11, 0.0f); // 停止
+    sleep_ms(1000);
+}
+
+void servo_rotate_reverse() {
+    set_servo_speed(11, -1.0f); // 後退
+    sleep_ms(500);
+    set_servo_speed(11, 0.0f); // 停止
+    sleep_ms(1000);
+}
+
+void servo_rotate_forward_diff() {
+  set_servo_speed(11, 0.3f); // 前進
+  sleep_ms(500);
+  set_servo_speed(11, 0.0f); // 停止
+  sleep_ms(1000);
+}
+
+void servo_rotate_reverse_diff() {
+  set_servo_speed(11, -0.3f); // 後退
+  sleep_ms(500);
+  set_servo_speed(11, 0.0f); // 停止
+  sleep_ms(1000);
+}
