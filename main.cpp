@@ -42,12 +42,6 @@ static inline bool is_within_10pct(int32_t s2, int32_t s3) {
   return (sum23 == 0) ? (diff23 == 0) : (diff23 <= (sum23 * 10) / 100);
 }
 
-////////////////いらない////////////////
-float *g_roll_deg = NULL;
-float *g_pitch_deg = NULL;
-float *g_yaw_deg = NULL;
-/////////////////////////////////////////
-
 int main() {
   stdio_init_all();
   gpio_set_function(12, UART_FUNCSEL_NUM(uart0, 0));
@@ -147,14 +141,6 @@ int main() {
   // Read raw accel/gyro burst and append values to CSV output.
   float ax = 0.0f, ay = 0.0f, az = 0.0f, gx = 0.0f, gy = 0.0f, gz = 0.0f;
   bool imu_ok = read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz);
-
-  ////////////////多分いらない///////////////
-  static float roll_deg_val = 0.0f;
-  static float pitch_deg_val = 0.0f;
-  static float yaw_deg_val = 0.0f;
-  g_roll_deg = &roll_deg_val;
-  g_pitch_deg = &pitch_deg_val;
-  g_yaw_deg = &yaw_deg_val;
 
   //目標角度まで衛星を回転させるプログラムtrack.cpp
   track(phase_angle); // 例: 現在の方位から90度回転させる
