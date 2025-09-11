@@ -68,7 +68,9 @@ int main() {
   static bool pair_stable = false;
   static bool diff_stable = false;
 
-  while (true) {
+  bool PHEASE_0 = false; // 光源が安定検出されたかどうかcopilot
+
+  while (!PHEASE_0) { //copilot
     uint16_t photodiode_result;
     uint16_t photoreflector_results[4];
 
@@ -88,7 +90,7 @@ int main() {
           pair_lost_count = 0;
         }
       } else {
-        // servo_rotate_forward();
+        servo_rotate_forward();
         pair_count = 0;
       }
     } else {
@@ -118,9 +120,9 @@ int main() {
         diff_stable = false;
       } else {
         if (photoreflector_results[2] > photoreflector_results[3]) {
-          // servo_rotate_forward_diff();
+          servo_rotate_forward_diff();
         } else if (photoreflector_results[3] > photoreflector_results[2]) {
-          // servo_rotate_reverse_diff();
+          servo_rotate_reverse_diff();
         }
         diff_count = 0;
       }
@@ -136,15 +138,29 @@ int main() {
           diff_lost_count = 0;
         }
       }
+/////////////////////////////////////////////      
+        if (pair_stable && diff_stable) {
+        printf("Sun detected and stable!\n");
+        PHEASE_0 = true;    // ループを抜ける
+      }
+/////////////////////////////////////////////
     }
-
-  // Read raw accel/gyro burst and append values to CSV output.
-  float ax = 0.0f, ay = 0.0f, az = 0.0f, gx = 0.0f, gy = 0.0f, gz = 0.0f;
-  bool imu_ok = read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz);
-
-  //目標角度まで衛星を回転させるプログラムtrack.cpp
-  track(phase_angle); // 例: 現在の方位から90度回転させる
   
+  }
+
+  bool PHEASE_1 = false;
+
+  while(!PHEASE_1){
+
+    // Read raw accel/gyro burst and append values to CSV output.
+    float ax = 0.0f, ay = 0.0f, az = 0.0f, gx = 0.0f, gy = 0.0f, gz = 0.0f;
+    bool imu_ok = read_accel_gyro_burst(&ax, &ay, &az, &gx, &gy, &gz);
+
+    //目標角度まで衛星を回転させるプログラムtrack.cpp
+    track(phase_angle); // 例: 現在の方位から90度回転させる
+    printf("Satellite is now facing the target angle.\n");
+    PHEASE_1 = true;
+
   }
   return 0;
 }
