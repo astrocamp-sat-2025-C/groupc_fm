@@ -22,11 +22,14 @@ void track(float delta_yaw) {
                           imu.ax_g, imu.ay_g, imu.az_g);
     float yaw, pitch, roll;
     MadgwickGetEuler(&yaw, &pitch, &roll);
-    float yaw_0 = yaw * (180.0f / 3.14159265f) * 3.0f;
+    float yaw_0 = yaw * (180.0f / 3.14159265f) * 6.0f;
     if(yaw_0 < 0){
         yaw_0 += 360.0f;
     }
     float target = yaw_0 + delta_yaw;
+    target = fmod(target, 360.0f); // 0-360度に正規化
+    printf("target%f_n", target);
+    sleep_ms(1000);
 
     while (count < target_count) {
         // 毎ループでIMU更新
@@ -34,7 +37,7 @@ void track(float delta_yaw) {
             MadgwickAHRSupdateIMU(imu.gx_dps * DEG2RAD, imu.gy_dps * DEG2RAD, imu.gz_dps * DEG2RAD,
                                   imu.ax_g, imu.ay_g, imu.az_g);
             MadgwickGetEuler(&yaw, &pitch, &roll);
-            float current_yaw = yaw * (180.0f / 3.14159265f) * 3.0f;
+            float current_yaw = yaw * (180.0f / 3.14159265f) * 6.0f;
             if(current_yaw < 0){
                 current_yaw += 360.0f;
             }       

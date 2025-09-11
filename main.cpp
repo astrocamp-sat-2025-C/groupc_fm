@@ -11,7 +11,7 @@
 
 #define SERVO_PIN 11
 
-float phase_angle = 90.0f; // 太陽から惑星に対する角度
+float phase_angle = 180.0f; // 太陽から惑星に対する角度
 
 static inline bool detect_sun_pair(const uint16_t vals[4]) {
   // Candidates: (0,1), (1,2), (2,3), (3,1)
@@ -155,44 +155,6 @@ int main() {
   g_roll_deg = &roll_deg_val;
   g_pitch_deg = &pitch_deg_val;
   g_yaw_deg = &yaw_deg_val;
-////////////////////////////////////////////
-
-  // Update Madgwick filter using scaled IMU values (convert gyro dps->rad/s if using read_imu_scaled)
-  // ImuScaled imu;
-  // if (read_imu_scaled(&imu)) {
-  //   const float DEG2RAD = 3.14159265f / 180.0f;
-  //   float mgx = imu.gx_dps * DEG2RAD;
-  //   float mgy = imu.gy_dps * DEG2RAD;
-  //   float mgz = imu.gz_dps * DEG2RAD;
-  //   MadgwickAHRSupdateIMU(mgx, mgy, mgz, imu.ax_g, imu.ay_g, imu.az_g);
-  //   float yaw, pitch, roll;
-  //   MadgwickGetEuler(&yaw, &pitch, &roll); // yaw/pitch/roll are in radians
-  //   // print Euler angles (radians)
-    
-  //   *g_roll_deg = roll * (180.0f / 3.14159265f);
-  //   *g_pitch_deg = pitch * (180.0f / 3.14159265f);
-  //   *g_yaw_deg = yaw * (180.0f / 3.14159265f); //1/3の値が出ている
-
-  //   printf("roll:%f, pitch:%f, yaw:%f\n", *g_roll_deg, *g_pitch_deg, *g_yaw_deg * 3.0f);
-
-    //roll_deg, pitch_deg, yaw_deg ともにおかしな値が出るが、yawに実際の角度変化の1/3の値が出るようです。
-    //3倍すれば太陽から惑星に対する回転角と比較してもよさげな値を出力できそうです。
-  // }
-  // IMUの角速度はdeg/sなのでrad/sに変換してから渡す
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // CSV: photoreflector[0..3], sum23, diff23, diff_stable, pair_stable,
-  // // pair_and_diff_ok, ax, ay, az, gx, gy, gz
-  // printf(
-  //   "%d,%d,%d,%d,%ld,%ld,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-  //   photoreflector_results[0], photoreflector_results[1],
-  //   photoreflector_results[2], photoreflector_results[3],
-  //   (long)photoreflector_results[2] + photoreflector_results[3],
-  //   (long)photoreflector_results[2] - photoreflector_results[3],
-  //   diff_stable ? 1 : 0, pair_stable ? 1 : 0,
-  //   (pair_stable && diff_stable) ? 1 : 0,
-  // imu_ok ? (int)ax : 0, imu_ok ? (int)ay : 0, imu_ok ? (int)az : 0,
-  // imu_ok ? (int)gx : 0, imu_ok ? (int)gy : 0, imu_ok ? (int)gz : 0);
 
   //目標角度まで衛星を回転させるプログラムtrack.cpp
   track(phase_angle); // 例: 現在の方位から90度回転させる
